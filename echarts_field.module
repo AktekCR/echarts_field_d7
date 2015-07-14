@@ -59,6 +59,12 @@ function echarts_field_field_widget_form(&$form, &$form_state, $field, $instance
     '#default_value' => isset($items[$delta]['json_url']) ? $items[$delta]['json_url'] : '',
   );
 
+  $element['json_structure'] = array(
+    '#title' => t('JSON Structure'),
+    '#type' => 'textfield',
+    '#required' => $required,
+    '#default_value' => isset($items[$delta]['json_structure']) ? $items[$delta]['json_structure'] : '',
+  );
   $element['axis_x'] = array(
     '#title' => t('JSON key field name'),
     '#type' => 'textfield',
@@ -136,11 +142,10 @@ function echarts_field_field_formatter_info() {
 function echarts_field_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display){
 
   $element = array();
-
   switch ($display['type']) {
   case 'echarts_json_field_graph':
     $format_field = 'echarts_field_json_graph';//echarts_field_json_field_graph_format';
-    break;
+    break; 
   }
 
   foreach ($items as $delta => $item) {
@@ -148,9 +153,7 @@ function echarts_field_field_formatter_view($entity_type, $entity, $field, $inst
       '#markup' => theme($format_field, array('item' => $item)),
     );
   }
-
   return $element;
-
 }
 
 
@@ -184,38 +187,48 @@ function template_preprocess_echarts_field_json_graph(&$vars){
   $graph_type = $item['graph_type'];
   $series = explode(',',trim($item['series']));
   $series_x = $item['series_x'];
+  $json_structure = explode('-',trim($item['json_structure']));
   $json_data = file_get_contents($item['json_url']);
-  $json_array = json_decode($json_data);
+  $json_data = preg_replace('/"\s/', '"', $json_data);
+  $json_data = preg_replace('/\s"/', '"', $json_data);
 
+  $json_array = json_decode($json_data);
+  
+  foreach ($json_structure as $key => $value) {
+     $json_tmp = $json_array->$value;
+     $json_array = $json_tmp; 
+  }
+  $nameG = hash('MD5',microtime(true));
+  
   switch ($graph_type) {
     case 'line':
       $series_x = explode(',',trim($series_x));
-      $graph_settings['echart']['grap'] = echarts_field_generate_settings_bar_line_graph($json_array, $item['axis_x'], $series, 'line',$series_x, '');
+      $graph_settings['echart'][$nameG] = echarts_field_generate_settings_bar_line_graph($json_array, $item['axis_x'], $series, 'line',$series_x, '');
       break;
    case 'bar':
       $series_x = explode(',',trim($series_x));
-      $graph_settings['echart']['grap'] = echarts_field_generate_settings_bar_line_graph($json_array, $item['axis_x'], $series, 'bar',$series_x, '');
+      $graph_settings['echart'][$nameG] = echarts_field_generate_settings_bar_line_graph($json_array, $item['axis_x'], $series, 'bar',$series_x, '');
     break;
   case 'pie':
-      $graph_settings['echart']['grap'] = echarts_field_generate_settings_pie_funnel_graph($json_array, $item['axis_x'],$series,'pie', $series_x, '');
+      $graph_settings['echart'][$nameG] = echarts_field_generate_settings_pie_funnel_graph($json_array, $item['axis_x'],$series,'pie', $series_x, '');
     break;
   case 'funnel':
-      $graph_settings['echart']['grap'] = echarts_field_generate_settings_pie_funnel_graph($json_array, $item['axis_x'],$series,'funnel', $series_x, '');
+      $graph_settings['echart'][$nameG] = echarts_field_generate_settings_pie_funnel_graph($json_array, $item['axis_x'],$series,'funnel', $series_x, '');
     break;
   case 'radar':
       $max_y = $item['max_y'];  
       $series_x = explode(',',trim($series_x));
-      $graph_settings['echart']['grap'] = echarts_field_generate_settings_radar_graph($json_array, $item['axis_x'],$series,'radar', $series_x, $max_y ,'');
+      $graph_settings['echart'][$nameG] = echarts_field_generate_settings_radar_graph($json_array, $item['axis_x'],$series,'radar', $series_x, $max_y ,'');
     break;
   case 'treemap':
-      $graph_settings['echart']['grap'] = echarts_field_generate_settings_treemap_graph($json_array, $item['axis_x'],$series,'treemap', $series_x, '');
+      $graph_settings['echart'][$nameG] = echarts_field_generate_settings_treemap_graph($json_array, $item['axis_x'],$series,'treemap', $series_x, '');
     break;
   default:
       $output = '<h3>' . t('This kind of graph is not implemented yet') . '</h3>';
     break;
   }
+  
   $vars['graph'] = render_echarts($graph_settings);
-
 }
 
 

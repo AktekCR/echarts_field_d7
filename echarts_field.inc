@@ -218,7 +218,7 @@ function echarts_field_generate_settings_pie_funnel_graph($json,$xaxis , $series
   $chart = array(
     'chartType' => $type,
     'useType' => array($type),
-    'containerId' => hash('MD5',microtime(true)),
+    'containerId' => 'pie_chart',
     'options' => array(
         'tooltip' => array(
           'trigger' => 'item',
@@ -294,7 +294,7 @@ function echarts_field_generate_settings_radar_graph($json, $xaxis , $series, $t
   $radar = array(
     'chartType' => $type,
     'useType' => array($type),
-    'containerId' => hash('MD5',microtime(true)),
+    'containerId' => 'radar_chart',
     'options' => array(
         'tooltip' => array('trigger' => 'axis'),          
         'title' => array('text' => $title),
@@ -372,7 +372,7 @@ function echarts_field_generate_settings_treemap_graph($json,$xaxis , $series, $
   $treemap = array(
     'chartType' => $type,
     'useType' => array($type),
-    'containerId' => hash('MD5',microtime(true)),
+    'containerId' => 'tree_chart',
     'options' => array(
       'tooltip' => array(
         'trigger' => 'item',
