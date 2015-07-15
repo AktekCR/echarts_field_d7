@@ -47,7 +47,7 @@ function echarts_field_create_polar_radar($key, $json, $series_x, $max_y)
 /**
 * Created by Randall Sibaja R.
 **/
-function echarts_field_get_series($xaxis, $series, $data, $graph_type, $series_x)
+function echarts_field_get_series($xaxis, $series, $data, $graph_type, $series_x, $shadow , $series_type)
 {
 
   $output = array();
@@ -65,12 +65,10 @@ function echarts_field_get_series($xaxis, $series, $data, $graph_type, $series_x
   }else if ( ($graph_type == 'bar') || ($graph_type == 'line') ){
       
     foreach ($series as $key => $v){
-    
       $data_temp = array();
       
       foreach($data as $row){
-        
-        $tempS = trim($row->$xaxis);
+        $tempS = trim($row->$xaxis);     
         if (in_array($tempS,$series_x)) 
         {
           $tempV = trim($row->$v);
@@ -100,15 +98,26 @@ function echarts_field_get_series($xaxis, $series, $data, $graph_type, $series_x
         )
       );
 
-
-      $output[] = array(
+     $dataTemp = array(
         'name' => $v,
-        'type'=> $graph_type,
+        'type'=> $series_type != '-' ? $series_type[$key] : $graph_type,
         'markLine' => $average,
         'markPoint' => $mark,
         'data'=> $data_temp
       );
 
+     if($shadow == 'Si'){
+        
+        $dataTemp['smooth'] = true;
+        $dataTemp['itemStyle'] = array(
+          'normal' => array(
+            'areaStyle' => array(
+              'type' => 'default'  
+            ) 
+          )
+        );
+      }
+      $output[] = $dataTemp;
     }
   }elseif ($graph_type == 'radar') {
     
@@ -136,12 +145,12 @@ function echarts_field_get_series($xaxis, $series, $data, $graph_type, $series_x
 /**
 * Created by  Randall Sibaja R.
 **/
-function echarts_field_generate_settings_bar_line_graph($json, $xaxis, $series, $type, $series_x ,$title = '')
+function echarts_field_generate_settings_bar_line_graph($json, $xaxis, $series, $type, $series_x ,$title = '', $enable_y, $shadow, $series_type)
 {
   
   $output = array(
     'chartType' => $type,
-    'useType' => array($type),
+    'useType' => array('bar','line'),
     'containerId' => hash('MD5',microtime(true)),
     'options' => array(
         'tooltip' => array('trigger' => 'axis'),          
@@ -162,25 +171,33 @@ function echarts_field_generate_settings_bar_line_graph($json, $xaxis, $series, 
                 )
               ),
               'dataView' => array(
-              'show' => TRUE,
-              'readOnly' => false,
-              'title' => t('Ver Datos'),
-              'lang' => array(
-                t('Datos'),
-                t('Regresar'),
-                ''
-              )          
-            ),
-            'restore' => array(
-              'show' => TRUE,
-              'title' => t('Refrescar')
-            ),
-            'saveAsImage' => array(
-              'show' => TRUE,
-              'title' => t('Guardar'),
-              'type' => 'png'
-            ),
-          )
+                'show' => TRUE,
+                'readOnly' => false,
+                'title' => t('Ver Datos'),
+                'lang' => array(
+                  t('Datos'),
+                  t('Regresar'),
+                  ''
+                )        
+              ),
+             'magicType' => array(
+                  'show' => true,
+                  'type' => array('line','bar'),
+                  'title' => array(
+                    'line' => t('Lineal'),
+                    'bar' => t('Barras')
+                  )
+              ),  
+              'restore' => array(
+                'show' => TRUE,
+                'title' => t('Refrescar')
+              ),
+              'saveAsImage' => array(
+                'show' => TRUE,
+                'title' => t('Guardar'),
+                'type' => 'png'
+              ),
+            )
         ),
         'dataZoom' => array(
             'show' => true,
@@ -197,10 +214,13 @@ function echarts_field_generate_settings_bar_line_graph($json, $xaxis, $series, 
       ),
       'yAxis' => array(
         '0' => array(
-          'type' => 'value'
+          'type' => 'value',
+          'axisLabel' => array(
+              'show' => $enable_y == 'Si' ? true : false
+          )
         )
       ),
-      'series' => echarts_field_get_series($xaxis, $series, $json, $type, $series_x),
+      'series' => echarts_field_get_series($xaxis, $series, $json, $type, $series_x, $shadow, $series_type),
     )
   );
 
@@ -210,12 +230,12 @@ function echarts_field_generate_settings_bar_line_graph($json, $xaxis, $series, 
 /**
 * Created by Randall Sibaja R.
 **/
-function echarts_field_generate_settings_pie_funnel_graph($json,$xaxis , $series, $type, $series_x, $title='')
+function echarts_field_generate_settings_pie_funnel_graph($json,$xaxis , $series, $type, $series_x, $title='', $max_y)
 {
     
   $chart = array(
     'chartType' => $type,
-    'useType' => array($type),
+    'useType' => array('pie','funnel'),
     'containerId' => hash('MD5',microtime(true)),
     'options' => array(
         'tooltip' => array(
@@ -244,7 +264,7 @@ function echarts_field_generate_settings_pie_funnel_graph($json,$xaxis , $series
                   'markClear' => t('Limpiar Marcas')
                 )
               ),
-              'dataView' => array(
+            'dataView' => array(
               'show' => TRUE,
               'readOnly' => false,
               'title' => t('Ver Datos'),
@@ -254,6 +274,21 @@ function echarts_field_generate_settings_pie_funnel_graph($json,$xaxis , $series
                 ''
               )          
             ),
+            'magicType' => array(
+              'show' => true,
+              'type' => array('pie','funnel'),
+              'title' => array(
+                'pie' => t('Pie'),
+                'funnel' => t('Funnel')
+              ),
+              'option' => array( 
+                'funnel' => array(
+                  'x' => '20%',
+                  'width' => '50%',
+                  'funnelAlign' => 'center'
+                )
+              )
+            ), 
             'restore' => array(
               'show' => TRUE,
               'title' => t('Refrescar')
@@ -271,11 +306,12 @@ function echarts_field_generate_settings_pie_funnel_graph($json,$xaxis , $series
               'name'=> t($series_x),
               'type'=> $type,
               'width' => $type == 'funnel' ? '50%' : '80%',
-              'x' => $type == 'funnel' ? '10%': '',
+              'x' => $type == 'funnel' ? '20%': '',
               'radius' => '70%',
-              'funnelAlign' => $type == 'funnel' ? 'left' : '',   
-              'center' => array('65%','50%'),
-              'data'=> echarts_field_get_series($xaxis, $series, $json, $type, $series_x)
+              'funnelAlign' => $type == 'funnel' ? 'center' : '',
+              'max' => $max_y,   
+              'center' => array('60%','50%'),
+              'data'=> echarts_field_get_series($xaxis, $series, $json, $type, $series_x, '','')
           )          
         )
       )
@@ -352,7 +388,7 @@ function echarts_field_generate_settings_radar_graph($json, $xaxis , $series, $t
                     )
                   )
               ),
-              'data' => echarts_field_get_series($xaxis, $series, $json, $type, $series_x)
+              'data' => echarts_field_get_series($xaxis, $series, $json, $type, $series_x,'','')
           )
         ) 
       )
@@ -428,7 +464,7 @@ function echarts_field_generate_settings_treemap_graph($json,$xaxis , $series, $
               )
             )
           ),
-          'data'=> echarts_field_get_series($xaxis, $series, $json, $type, $series_x)
+          'data'=> echarts_field_get_series($xaxis, $series, $json, $type, $series_x,'','')
         )          
       )
     )

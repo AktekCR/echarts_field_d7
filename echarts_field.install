@@ -29,6 +29,11 @@ function echarts_field_field_schema($field) {
       'length' => 255,
       'not null' => TRUE
     ),
+     'series_type' => array(
+      'type' => 'varchar',
+      'length' => 255,
+      'not null' => TRUE
+    ),
     'series_x' => array(
       'type' => 'varchar',
       'length' => 255,
@@ -37,6 +42,16 @@ function echarts_field_field_schema($field) {
     'max_y' => array(
       'type' => 'varchar',
       'length' => 255,
+      'not null' => TRUE
+    ),
+    'enable_y' =>array(
+      'type' => 'varchar',
+      'length' => 12,
+      'not null' => TRUE
+    ),
+    'linear_shadow' =>array(
+      'type' => 'varchar',
+      'length' => 12,
       'not null' => TRUE
     )
   );

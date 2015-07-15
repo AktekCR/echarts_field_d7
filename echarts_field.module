@@ -60,7 +60,7 @@ function echarts_field_field_widget_form(&$form, &$form_state, $field, $instance
   );
 
   $element['json_structure'] = array(
-    '#title' => t('JSON Structure'),
+    '#title' => t('JSON Structure (separated by a comma)'),
     '#type' => 'textfield',
     '#required' => $required,
     '#default_value' => isset($items[$delta]['json_structure']) ? $items[$delta]['json_structure'] : '',
@@ -79,6 +79,13 @@ function echarts_field_field_widget_form(&$form, &$form_state, $field, $instance
     '#default_value' => isset($items[$delta]['series']) ? $items[$delta]['series'] : '',
   );
 
+  $element['series_type'] = array(
+    '#title' => t('Data Series Types (separated by a comma). For Linear and Bar Charts'),
+    '#type' => 'textfield',
+    '#required' => $required,
+    '#default_value' => isset($items[$delta]['series_type']) ? $items[$delta]['series_type'] : '',
+  );
+
   $element['series_x'] = array(
     '#title' => t('x-axis (separated by a comma)'),
     '#type' => 'textfield',
@@ -87,9 +94,23 @@ function echarts_field_field_widget_form(&$form, &$form_state, $field, $instance
   );
 
   $element['max_y'] = array(
-    '#title' => t('Max y-axis value (For radial charts)'),
+    '#title' => t('Max y-axis value (For radial and Funnel charts)'),
     '#type' => 'textfield',
     '#default_value' => isset($items[$delta]['max_y']) ? $items[$delta]['max_y'] : '',
+  );
+
+  $element['enable_y'] = array(
+    '#title' => t('Show axis Y?'),
+    '#type' => 'radios',
+    '#options' => drupal_map_assoc(array(t('Si'), t('No'))),
+    '#default_value' => isset($items[$delta]['enable_y']) ? $items[$delta]['enable_y'] : ''
+  );
+
+   $element['linear_shadow'] = array(
+    '#title' => t('Enable Linear Shadow?'),
+    '#type' => 'radios',
+    '#options' => drupal_map_assoc(array(t('Si'), t('No'))),
+    '#default_value' => isset($items[$delta]['linear_shadow']) ? $items[$delta]['linear_shadow'] : ''
   );
 
   return $element;
@@ -186,8 +207,15 @@ function _echarts_field_generate_graph($item){
   $graph_settings = array();
   $graph_type = $item['graph_type'];
   $series = explode(',',trim($item['series']));
+  
+  $series_type = $item['series_type'] != '' ? explode(',',trim($item['series_type'])) : '-';
+
   $series_x = $item['series_x'];
-  $json_structure = explode('-',trim($item['json_structure']));
+  
+  $enable_y = $item['enable_y']; 
+  $linear_shadow = $item['linear_shadow'];
+
+  $json_structure = explode(',',trim($item['json_structure']));
   $json_data = file_get_contents($item['json_url']);
   $json_data = preg_replace('/"\s/', '"', $json_data);
   $json_data = preg_replace('/\s"/', '"', $json_data);
@@ -203,17 +231,18 @@ function _echarts_field_generate_graph($item){
   switch ($graph_type) {
     case 'line':
       $series_x = explode(',',trim($series_x));
-      $graph_settings['echart'][$nameG] = echarts_field_generate_settings_bar_line_graph($json_array, $item['axis_x'], $series, 'line',$series_x, '');
+      $graph_settings['echart'][$nameG] = echarts_field_generate_settings_bar_line_graph($json_array, $item['axis_x'], $series, 'line',$series_x, '',$enable_y, $linear_shadow, $series_type);
       break;
    case 'bar':
       $series_x = explode(',',trim($series_x));
-      $graph_settings['echart'][$nameG] = echarts_field_generate_settings_bar_line_graph($json_array, $item['axis_x'], $series, 'bar',$series_x, '');
-    break;
+      $graph_settings['echart'][$nameG] = echarts_field_generate_settings_bar_line_graph($json_array, $item['axis_x'], $series, 'bar',$series_x, '',$enable_y, $linear_shadow, $series_type);
+    break; 
   case 'pie':
-      $graph_settings['echart'][$nameG] = echarts_field_generate_settings_pie_funnel_graph($json_array, $item['axis_x'],$series,'pie', $series_x, '');
+      $graph_settings['echart'][$nameG] = echarts_field_generate_settings_pie_funnel_graph($json_array, $item['axis_x'],$series,'pie', $series_x, '', '');
     break;
   case 'funnel':
-      $graph_settings['echart'][$nameG] = echarts_field_generate_settings_pie_funnel_graph($json_array, $item['axis_x'],$series,'funnel', $series_x, '');
+      $max_y = $item['max_y'];  
+      $graph_settings['echart'][$nameG] = echarts_field_generate_settings_pie_funnel_graph($json_array, $item['axis_x'],$series,'funnel', $series_x, '', $max_y);
     break;
   case 'radar':
       $max_y = $item['max_y'];  
