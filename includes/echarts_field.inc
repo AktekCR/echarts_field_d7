@@ -28,7 +28,7 @@ function echarts_field_create_polar_radar($key, $json, $series_x, $max_y)
 {
 
   $output = array();
-  foreach($json->values as $row){
+  foreach($json as $row){
 
     $var = trim($row->$key);
 
@@ -53,11 +53,11 @@ function echarts_field_get_series($xaxis, $series, $data, $graph_type, $series_x
   $output = array();
 
   if( ($graph_type == 'pie') || ($graph_type == 'funnel') ){
-    foreach($data->values as $row){
+    foreach($data as $row){
       if(in_array($row->$xaxis, $series)){
         $output[] = array(
           'name' => t($row->$xaxis),
-          'value' => str_replace(',', '.', $row->$series_x),
+          'value' => intval(str_replace(',', '.', $row->$series_x)),
         );
       }
     }
@@ -122,7 +122,6 @@ function echarts_field_get_series($xaxis, $series, $data, $graph_type, $series_x
           $output[] = array('value'=> $data_temp, 'name'=> $v);
       }
   }elseif ($graph_type == 'treemap') {
-            
       foreach($data as $row)
       {
         if(in_array($row->$xaxis, $series))
@@ -131,7 +130,6 @@ function echarts_field_get_series($xaxis, $series, $data, $graph_type, $series_x
         }
       }  
   }
-  //print_r($output);
   return $output;  
 }
 
@@ -231,7 +229,7 @@ function echarts_field_generate_settings_pie_funnel_graph($json,$xaxis , $series
         ),
         'legend' => array(
           'data' => $series,
-          'orient' => 'horizontal',
+          'orient' => 'vertical',
           'x' => 'left',
           'y' => 'bottom'
         ),
@@ -273,10 +271,10 @@ function echarts_field_generate_settings_pie_funnel_graph($json,$xaxis , $series
               'name'=> t($series_x),
               'type'=> $type,
               'width' => $type == 'funnel' ? '50%' : '80%',
-              'x' => $type == 'funnel' ? '5%': '',
+              'x' => $type == 'funnel' ? '10%': '',
               'radius' => '70%',
               'funnelAlign' => $type == 'funnel' ? 'left' : '',   
-              'center' => array('50%','60%'),
+              'center' => array('65%','50%'),
               'data'=> echarts_field_get_series($xaxis, $series, $json, $type, $series_x)
           )          
         )

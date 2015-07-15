@@ -103,7 +103,7 @@ function echarts_field_field_widget_form(&$form, &$form_state, $field, $instance
 **/
 function echarts_field_field_widget_form_alter(&$element, &$form_state, &$context)
 {
-	drupal_add_js(drupal_get_path('module', 'echarts_field') . '/js/echarts_field.js', 'file');
+  drupal_add_js(drupal_get_path('module', 'echarts_field') . '/js/echarts_field.js', 'file');
 }
 
 
