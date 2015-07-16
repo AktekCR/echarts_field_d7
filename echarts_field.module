@@ -4,7 +4,6 @@
  * Implementation of hook_field_info()
  */
 function echarts_field_field_info() { 
-
   return array( 
     'echarts_json_field' => array( 
       'label' => t('ECharts field'), 
@@ -20,14 +19,12 @@ function echarts_field_field_info() {
  * Implementation of hook_field_widget_info()
  */
 function echarts_field_field_widget_info() {
-  
   return array(
     'echarts_json_field_widget' => array(
       'label' => t('EChart JSON field'),
       'field types' => array('echarts_json_field'),
     ),
   );
-
 }
 
 
@@ -99,22 +96,42 @@ function echarts_field_field_widget_form(&$form, &$form_state, $field, $instance
     '#default_value' => isset($items[$delta]['max_y']) ? $items[$delta]['max_y'] : '',
   );
 
-  $element['enable_y'] = array(
-    '#title' => t('Show axis Y?'),
+  $element['show_average'] = array(
+    '#title' => t('Show average of Data? (For bar and Linear chart only)'),
     '#type' => 'radios',
     '#options' => drupal_map_assoc(array(t('Si'), t('No'))),
-    '#default_value' => isset($items[$delta]['enable_y']) ? $items[$delta]['enable_y'] : ''
+    '#default_value' => isset($items[$delta]['show_average']) ? $items[$delta]['show_average'] : 'No'
+  );
+
+  $element['show_maxMin'] = array(
+    '#title' => t('Show Max and Min of Data? (For bar and Linear chart only)'),
+    '#type' => 'radios',
+    '#options' => drupal_map_assoc(array(t('Si'), t('No'))),
+    '#default_value' => isset($items[$delta]['show_maxMin']) ? $items[$delta]['show_maxMin'] : 'No'
+  );
+
+  $element['enable_y'] = array(
+    '#title' => t('Show axis Y? (For bar and Linear chart only)'),
+    '#type' => 'radios',
+    '#options' => drupal_map_assoc(array(t('Si'), t('No'))),
+    '#default_value' => isset($items[$delta]['enable_y']) ? $items[$delta]['enable_y'] : 'No'
   );
 
    $element['linear_shadow'] = array(
-    '#title' => t('Enable Linear Shadow?'),
+    '#title' => t('Enable Linear Shadow? (For Linear Chart Only)'),
     '#type' => 'radios',
     '#options' => drupal_map_assoc(array(t('Si'), t('No'))),
-    '#default_value' => isset($items[$delta]['linear_shadow']) ? $items[$delta]['linear_shadow'] : ''
+    '#default_value' => isset($items[$delta]['linear_shadow']) ? $items[$delta]['linear_shadow'] : 'No'
+  );
+
+  $element['stack_bar'] = array(
+    '#title' => t('Stack Series of Data? (For bar chart only)'),
+    '#type' => 'radios',
+    '#options' => drupal_map_assoc(array(t('Si'), t('No'))),
+    '#default_value' => isset($items[$delta]['stack_bar']) ? $items[$delta]['stack_bar'] : 'No'
   );
 
   return $element;
-
 }
 
 
@@ -132,13 +149,10 @@ function echarts_field_field_widget_form_alter(&$element, &$form_state, &$contex
  * Implements hook_field_is_empty().
  */
 function echarts_field_field_is_empty($item, $field) {
-
   if ( empty($item['json_url']) ) {
     return TRUE;
   }
-
   return FALSE;
-
 }
 
 
@@ -205,52 +219,70 @@ function _echarts_field_generate_graph($item){
 
   $output = '';
   $graph_settings = array();
+
+  //Type of Chart to Create
   $graph_type = $item['graph_type'];
+  
+  //Data Series 
   $series = explode(',',trim($item['series']));
   
+  //Type of Series only for Bar and Line Charts
   $series_type = $item['series_type'] != '' ? explode(',',trim($item['series_type'])) : '-';
-
-  $series_x = $item['series_x'];
   
+  //Axis X labels...
+  $axisX_labels = $item['series_x'];
+  
+  //Configuration Charts Variables
   $enable_y = $item['enable_y']; 
   $linear_shadow = $item['linear_shadow'];
-
-  $json_structure = explode(',',trim($item['json_structure']));
+  $stack_bar = $item['stack_bar'];
+  $show_average = $item['show_average'];
+  $show_maxMin = $item['show_maxMin'];
+  
+  //Read the Json from URL.  
   $json_data = file_get_contents($item['json_url']);
-  $json_data = preg_replace('/"\s/', '"', $json_data);
-  $json_data = preg_replace('/\s"/', '"', $json_data);
 
+  //Remove blank spaces in Json String
+  $patterns = array('/"\s/','/\s"/');
+  $replaces = array('"','"');
+  $json_data = preg_replace($patterns, $replaces, $json_data);
+
+  //Convert Json string in Json Object
   $json_array = json_decode($json_data);
   
+
+  //Get the Json structure and create the Json Array
+  $json_structure = explode(',',trim($item['json_structure']));
   foreach ($json_structure as $key => $value) {
      $json_tmp = $json_array->$value;
      $json_array = $json_tmp; 
   }
+  //Generic name to the chart.
   $nameG = hash('MD5',microtime(true));
   
   switch ($graph_type) {
     case 'line':
-      $series_x = explode(',',trim($series_x));
-      $graph_settings['echart'][$nameG] = echarts_field_generate_settings_bar_line_graph($json_array, $item['axis_x'], $series, 'line',$series_x, '',$enable_y, $linear_shadow, $series_type);
+      $axisX_labels = explode(',',trim($axisX_labels));
+      $graph_settings['echart'][$nameG] = echarts_field_generate_settings_bar_line_graph($json_array, $item['axis_x'], $series, 'line',$axisX_labels, '',$enable_y, $linear_shadow, $series_type, '', $show_average, $show_maxMin);
       break;
    case 'bar':
-      $series_x = explode(',',trim($series_x));
-      $graph_settings['echart'][$nameG] = echarts_field_generate_settings_bar_line_graph($json_array, $item['axis_x'], $series, 'bar',$series_x, '',$enable_y, $linear_shadow, $series_type);
+      $axisX_labels = explode(',',trim($axisX_labels));
+      $graph_settings['echart'][$nameG] = echarts_field_generate_settings_bar_line_graph($json_array, $item['axis_x'], $series, 'bar',$axisX_labels, '',$enable_y, $linear_shadow, $series_type, $stack_bar, $show_average, $show_maxMin);
     break; 
   case 'pie':
-      $graph_settings['echart'][$nameG] = echarts_field_generate_settings_pie_funnel_graph($json_array, $item['axis_x'],$series,'pie', $series_x, '', '');
+      $graph_settings['echart'][$nameG] = echarts_field_generate_settings_pie_funnel_graph($json_array, $item['axis_x'],$series,'pie', $axisX_labels, '', '');
     break;
   case 'funnel':
       $max_y = $item['max_y'];  
-      $graph_settings['echart'][$nameG] = echarts_field_generate_settings_pie_funnel_graph($json_array, $item['axis_x'],$series,'funnel', $series_x, '', $max_y);
+      $graph_settings['echart'][$nameG] = echarts_field_generate_settings_pie_funnel_graph($json_array, $item['axis_x'],$series,'funnel', $axisX_labels, '', $max_y);
     break;
   case 'radar':
       $max_y = $item['max_y'];  
-      $series_x = explode(',',trim($series_x));
-      $graph_settings['echart'][$nameG] = echarts_field_generate_settings_radar_graph($json_array, $item['axis_x'],$series,'radar', $series_x, $max_y ,'');
+      $axisX_labels = explode(',',trim($axisX_labels));
+      $graph_settings['echart'][$nameG] = echarts_field_generate_settings_radar_graph($json_array, $item['axis_x'],$series,'radar', $axisX_labels, $max_y ,'');
     break;
   case 'treemap':
-      $graph_settings['echart'][$nameG] = echarts_field_generate_settings_treemap_graph($json_array, $item['axis_x'],$series,'treemap', $series_x, '');
+      $graph_settings['echart'][$nameG] = echarts_field_generate_settings_treemap_graph($json_array, $item['axis_x'],$series,'treemap', $axisX_labels, '');
     break;
   default:
       $output = '<h3>' . t('This kind of graph is not implemented yet') . '</h3>';
@@ -266,7 +298,6 @@ function _echarts_field_generate_graph($item){
  * Implements custom template_preprocess
  */
 function template_preprocess_echarts_field_json_graph(&$vars){
-  
   $vars['graph'] = $vars['item']['graph'];
 }
 

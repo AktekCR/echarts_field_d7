@@ -49,11 +49,27 @@ function echarts_field_field_schema($field) {
       'length' => 12,
       'not null' => TRUE
     ),
+    'show_average' =>array(
+      'type' => 'varchar',
+      'length' => 12,
+      'not null' => TRUE
+    ),
+    'show_maxMin' =>array(
+      'type' => 'varchar',
+      'length' => 12,
+      'not null' => TRUE
+    ),
     'linear_shadow' =>array(
       'type' => 'varchar',
       'length' => 12,
       'not null' => TRUE
+    ),
+     'stack_bar' =>array(
+      'type' => 'varchar',
+      'length' => 12,
+      'not null' => TRUE
     )
+
   );
   
   return array(
