@@ -1,39 +1,36 @@
 <?php
 
-
 /**
 * Created by Randall Sibaja R.
 **/
-function echarts_field_get_data_from_json($key, $json, $series_x)
-{
+function echarts_field_get_data_from_json($key, $json, $series_x){
  
   $output = array();
 
   foreach($json as $row){
-    
+  
     $var = trim($row->$key);
 
-    if(in_array($var, $series_x ))
-    {
+    if ( in_array($var, $series_x ) ) {
       $output[] = $var;  
     }
   }
   return $output;
 }
 
+
 /**
 * Created by Randall Sibaja R.
 **/
-function echarts_field_create_polar_radar($key, $json, $series_x, $max_y)
-{
+function echarts_field_create_polar_radar($key, $json, $series_x, $max_y){
 
   $output = array();
   foreach($json as $row){
 
     $var = trim($row->$key);
 
-    if(in_array($var, $series_x ))
-    {
+    if ( in_array($var, $series_x ) ){
+      
       $output[] = array(
         'text' => t($var),
         'max' =>  intval($max_y)
@@ -47,14 +44,15 @@ function echarts_field_create_polar_radar($key, $json, $series_x, $max_y)
 /**
 * Created by Randall Sibaja R.
 **/
-function echarts_field_get_series($xaxis, $series, $data, $graph_type, $series_x, $shadow , $series_type, $stack_bar, $show_average, $show_maxMin)
-{
+function echarts_field_get_series($xaxis, $series, $data, $graph_type, $series_x,
+  $shadow, $series_type, $stack_bar, $show_average, $show_maxmin) {
 
   $output = array();
 
-  if( ($graph_type == 'pie') || ($graph_type == 'funnel') ){
+  if ( ($graph_type == 'pie') || ($graph_type == 'funnel') ){
+    
     foreach($data as $row){
-      if(in_array($row->$xaxis, $series)){
+      if ( in_array($row->$xaxis, $series) ){
         $output[] = array(
           'name' => t($row->$xaxis),
           'value' => intval(str_replace(',', '.', $row->$series_x)),
@@ -62,100 +60,99 @@ function echarts_field_get_series($xaxis, $series, $data, $graph_type, $series_x
       }
     }
 
-  }else if ( ($graph_type == 'bar') || ($graph_type == 'line') ){
+  } elseif ( ($graph_type == 'bar') || ($graph_type == 'line') ){
       
-    foreach ($series as $key => $v){
+    foreach ($series as $key => $series_value){
+      
       $data_temp = array();
       
       foreach($data as $row){
-        $tempS = trim($row->$xaxis);     
-        if (in_array($tempS,$series_x)) 
-        {
-          $tempV = trim($row->$v);
-          $data_temp[] = intval(str_replace(',', '.', $tempV));
+        $temps = trim($row->$xaxis);     
+        if ( in_array($temps,$series_x) ){
+          $tempv = trim($row->$series_value;
+          $data_temp[] = intval(str_replace(',', '.', $tempv));
         }
       }
 
       $average = array(
         'data' => array(
           array(
-          'type' => 'average',
-          'name'=> t('Promedio')
+            'type' => 'average',
+            'name'=> t('Promedio')
           )
         )
       );
 
-     $mark =  array(
+      $mark =  array(
         'data' => array(
           array(
             'type' => 'max',
-            'name'=> 'Maximo'
+            'name'=> t('Maximo')
           ),
           array(
             'type' => 'min',
-            'name' => 'Minimo'
+            'name' => t('Minimo')
           )
         )
       );
 
-     $dataTemp = array(
+      $dataTemp = array(
         'name' => $v,
         'type'=> $series_type != '-' ? $series_type[$key] : $graph_type,
         'data'=> $data_temp
       );
 
-    if($show_average == 'Si'){
-      $dataTemp['markLine'] = $average;
-    }
+      if ( $show_average == 'Si' ){
+        $dataTemp['markLine'] = $average;
+      }
 
-    if($show_maxMin == 'Si'){
-      $dataTemp['markPoint'] = $mark;
-    }
+      if ( $show_maxmin == 'Si' ){
+        $dataTemp['markPoint'] = $mark;
+      }
 
-    if($shadow == 'Si'){
-      $dataTemp['smooth'] = true;
-      $dataTemp['itemStyle'] = array(
-        'normal' => array(
-          'areaStyle' => array(
-            'type' => 'default'  
-          ) 
-        )
-      );
-    }
-
-    if($stack_bar == 'Si'){
-      $dataTemp['stack'] = 'total';
-      $dataTemp['itemStyle'] = array(
-        'normal' => array(
-          'label' => array(
-            'show' => TRUE,
-            'position' => 'insideRight'
+      if ( $shadow == 'Si' ){
+        $dataTemp['smooth'] = true;
+        $dataTemp['itemStyle'] = array(
+          'normal' => array(
+            'areaStyle' => array(
+              'type' => 'default'  
+            ) 
           )
-        )  
-      );
-    }
+        );
+      }
+
+      if ( $stack_bar == 'Si' ){
+        $dataTemp['stack'] = 'total';
+        $dataTemp['itemStyle'] = array(
+          'normal' => array(
+            'label' => array(
+              'show' => TRUE,
+              'position' => 'insideRight'
+            )
+          )  
+        );
+      }
 
       $output[] = $dataTemp;
     }
-  }elseif ($graph_type == 'radar') {
+  } elseif ($graph_type == 'radar') {
     
-    foreach ($series as $key => $v) 
-      {
-          $data_temp = array();
-          foreach($data as $myValue)
-          {
-            $data_temp[] = intval(str_replace(',', '.',$myValue-> $v));
-          }
-          $output[] = array('value'=> $data_temp, 'name'=> $v);
+    foreach ($series as $key => $series_value) {
+      $data_temp = array();
+      
+      foreach($data as $value) {
+        $data_temp[] = intval(str_replace(',', '.',$value->$series_value));
       }
-  }elseif ($graph_type == 'treemap') {
-      foreach($data as $row)
-      {
-        if(in_array($row->$xaxis, $series))
-        {
-          $output[] = array('name'=> $row->$xaxis , 'value' => intval($row->$series_x));
-        }
-      }  
+      
+      $output[] = array('value'=> $data_temp, 'name'=> $series_value);
+    }
+  } elseif ($graph_type == 'treemap') {
+    
+    foreach($data as $row) {
+      if ( in_array($row->$xaxis, $series) ){
+        $output[] = array('name'=> $row->$xaxis , 'value' => intval($row->$series_x));
+      }
+    }  
   }
   return $output;  
 }
@@ -163,10 +160,10 @@ function echarts_field_get_series($xaxis, $series, $data, $graph_type, $series_x
 /**
 * Created by  Randall Sibaja R.
 **/
-function echarts_field_generate_settings_bar_line_graph($json, $xaxis, $series, $type, $series_x ,$title = '', $enable_y, $shadow, $series_type,$stack_bar, $show_average, $show_maxMin)
-{
+function echarts_field_generate_settings_bar_line_graph($json, $xaxis, $series, 
+  $type, $series_x ,$title = '', $enable_y, $shadow, $series_type, $stack_bar,
+  $show_average, $show_maxmin) {
   
-
   $options = array(
     'tooltip' => array('trigger' => 'axis'),          
     'title' => array('text' => $title),
@@ -235,14 +232,15 @@ function echarts_field_generate_settings_bar_line_graph($json, $xaxis, $series, 
         )
       )
     ),
-    'series' => echarts_field_get_series($xaxis, $series, $json, $type, $series_x, $shadow, $series_type,$stack_bar, $show_average, $show_maxMin),
+    'series' => echarts_field_get_series($xaxis, $series, $json, $type, $series_x,
+      $shadow, $series_type,$stack_bar, $show_average, $show_maxmin),
   );
 
-  if($stack_bar == 'Si'){
-      $xA = $options['xAxis'];
-      $yA = $options['yAxis'];
-      $options['xAxis'] = $yA;
-      $options['yAxis'] = $xA;
+  if ( $stack_bar == 'Si' ){
+      $xa = $options['xAxis'];
+      $ya = $options['yAxis'];
+      $options['xAxis'] = $ya;
+      $options['yAxis'] = $xa;
   }
 
   $output = array(
@@ -258,8 +256,8 @@ function echarts_field_generate_settings_bar_line_graph($json, $xaxis, $series, 
 /**
 * Created by Randall Sibaja R.
 **/
-function echarts_field_generate_settings_pie_funnel_graph($json,$xaxis , $series, $type, $series_x, $title='', $max_y)
-{
+function echarts_field_generate_settings_pie_funnel_graph($json, $xaxis, $series, 
+  $type, $series_x, $title='', $max_y) {
     
   $chart = array(
     'chartType' => $type,
@@ -339,7 +337,8 @@ function echarts_field_generate_settings_pie_funnel_graph($json,$xaxis , $series
               'funnelAlign' => $type == 'funnel' ? 'center' : '',
               'max' => $max_y,   
               'center' => array('60%','50%'),
-              'data'=> echarts_field_get_series($xaxis, $series, $json, $type, $series_x, '','','', '' ,'')
+              'data'=> echarts_field_get_series($xaxis, $series, $json, $type, $series_x, '',
+                '','','','')
           )          
         )
       )
@@ -351,8 +350,9 @@ function echarts_field_generate_settings_pie_funnel_graph($json,$xaxis , $series
 *Created by  Randall Sibaja R.
 *
 **/
-function echarts_field_generate_settings_radar_graph($json, $xaxis , $series, $type, $series_x, $max_y, $title='')
-{  
+function echarts_field_generate_settings_radar_graph($json, $xaxis , $series, 
+  $type, $series_x, $max_y, $title='') {  
+  
   $radar = array(
     'chartType' => $type,
     'useType' => array($type),
@@ -416,7 +416,8 @@ function echarts_field_generate_settings_radar_graph($json, $xaxis , $series, $t
                     )
                   )
               ),
-              'data' => echarts_field_get_series($xaxis, $series, $json, $type, $series_x,'','','','','')
+              'data' => echarts_field_get_series($xaxis, $series, $json, $type, $series_x, '', 
+                 '','','','')
           )
         ) 
       )
@@ -429,8 +430,9 @@ function echarts_field_generate_settings_radar_graph($json, $xaxis , $series, $t
 *Created by Randall Sibaja R. 
 *
 **/
-function echarts_field_generate_settings_treemap_graph($json,$xaxis , $series, $type, $series_x, $title='')
-{
+function echarts_field_generate_settings_treemap_graph($json,$xaxis , $series,
+  $type, $series_x, $title='') {
+  
   $treemap = array(
     'chartType' => $type,
     'useType' => array($type),
@@ -492,13 +494,11 @@ function echarts_field_generate_settings_treemap_graph($json,$xaxis , $series, $
               )
             )
           ),
-          'data'=> echarts_field_get_series($xaxis, $series, $json, $type, $series_x,'','','','','')
+          'data'=> echarts_field_get_series($xaxis, $series, $json, $type, $series_x,'',
+             '','','','')
         )          
       )
     )
   );
   return $treemap;
 }
-
-
-

@@ -31,7 +31,8 @@ function echarts_field_field_widget_info() {
 /**
  * Implements hook_field_widget_form()
  */
-function echarts_field_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element){
+function echarts_field_field_widget_form(&$form, &$form_state, $field, $instance,
+  $langcode, $items, $delta, $element){
 
   $field_name = $instance['field_name'];
   $required = $element['#required'];
@@ -135,14 +136,15 @@ function echarts_field_field_widget_form(&$form, &$form_state, $field, $instance
 }
 
 
-/**
+/*
 *Implements hook_form_alter()
 *
-**/
+
 function echarts_field_field_widget_form_alter(&$element, &$form_state, &$context)
 {
   drupal_add_js(drupal_get_path('module', 'echarts_field') . '/js/echarts_field.js', 'file');
 }
+*/
 
 
 /**
@@ -167,20 +169,20 @@ function echarts_field_field_formatter_info() {
       'field types' => array('echarts_json_field'),
     ),
   );
-
 }
 
 
 /**
  * Implements hook_field_formatter_view().
  */
-function echarts_field_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display){
+function echarts_field_field_formatter_view($entity_type, $entity, $field,
+  $instance, $langcode, $items, $display){
 
   $element = array();
   switch ($display['type']) {
-  case 'echarts_json_field_graph':
-    $format_field = 'echarts_field_json_graph';//echarts_field_json_field_graph_format';
-    break; 
+    case 'echarts_json_field_graph':
+      $format_field = 'echarts_field_json_graph';//echarts_field_json_field_graph_format';
+      break; 
   }
 
   foreach ($items as $delta => $item) {
@@ -197,7 +199,6 @@ function echarts_field_field_formatter_view($entity_type, $entity, $field, $inst
  * Implements hook_theme()
  */
 function echarts_field_theme(){
-
   return array(
     'echarts_field_json_graph' => array(
       'template' => 'theme/echarts_field_json_graph',
@@ -206,7 +207,6 @@ function echarts_field_theme(){
       ),
     ),
   );
-
 }
 
 
@@ -218,6 +218,7 @@ function _echarts_field_generate_graph($item){
   module_load_include('inc', 'echarts_field', 'includes/echarts_field');
 
   $output = '';
+
   $graph_settings = array();
 
   //Type of Chart to Create
@@ -230,14 +231,14 @@ function _echarts_field_generate_graph($item){
   $series_type = $item['series_type'] != '' ? explode(',',trim($item['series_type'])) : '-';
   
   //Axis X labels...
-  $axisX_labels = $item['series_x'];
+  $axisx_labels = $item['series_x'];
   
   //Configuration Charts Variables
   $enable_y = $item['enable_y']; 
   $linear_shadow = $item['linear_shadow'];
   $stack_bar = $item['stack_bar'];
   $show_average = $item['show_average'];
-  $show_maxMin = $item['show_maxMin'];
+  $show_maxmin = $item['show_maxMin'];
   
   //Read the Json from URL.  
   $json_data = file_get_contents($item['json_url']);
@@ -253,36 +254,64 @@ function _echarts_field_generate_graph($item){
 
   //Get the Json structure and create the Json Array
   $json_structure = explode(',',trim($item['json_structure']));
+  
   foreach ($json_structure as $key => $value) {
      $json_tmp = $json_array->$value;
      $json_array = $json_tmp; 
   }
   //Generic name to the chart.
-  $nameG = hash('MD5',microtime(true));
+  $nameg = hash('MD5',microtime(true));
   
   switch ($graph_type) {
     case 'line':
-      $axisX_labels = explode(',',trim($axisX_labels));
-      $graph_settings['echart'][$nameG] = echarts_field_generate_settings_bar_line_graph($json_array, $item['axis_x'], $series, 'line',$axisX_labels, '',$enable_y, $linear_shadow, $series_type, '', $show_average, $show_maxMin);
+      $axisx_labels = explode(',', trim($axisx_labels));
+
+      $line = echarts_field_generate_settings_bar_line_graph($json_array, $item['axis_x'], 
+        $series, 'line',$axisx_labels, '',$enable_y, $linear_shadow, $series_type, '', 
+        $show_average, $show_maxmin);
+
+      $graph_settings['echart'][$nameg] = $line;
       break;
    case 'bar':
-      $axisX_labels = explode(',',trim($axisX_labels));
-      $graph_settings['echart'][$nameG] = echarts_field_generate_settings_bar_line_graph($json_array, $item['axis_x'], $series, 'bar',$axisX_labels, '',$enable_y, $linear_shadow, $series_type, $stack_bar, $show_average, $show_maxMin);
+    $axisx_labels = explode(',',trim($axisx_labels));
+      
+    $bar = echarts_field_generate_settings_bar_line_graph($json_array, $item['axis_x'],
+      $series, 'bar',$axisx_labels, '',$enable_y, $linear_shadow, $series_type, 
+      $stack_bar, $show_average, $show_maxmin);
+
+    $graph_settings['echart'][$nameg] = $bar;
     break; 
   case 'pie':
-      $graph_settings['echart'][$nameG] = echarts_field_generate_settings_pie_funnel_graph($json_array, $item['axis_x'],$series,'pie', $axisX_labels, '', '');
+    $pie = echarts_field_generate_settings_pie_funnel_graph($json_array, $item['axis_x'],
+      $series,'pie', $axisx_labels, '', '');
+
+    $graph_settings['echart'][$nameg] = $pie;
     break;
   case 'funnel':
-      $max_y = $item['max_y'];  
-      $graph_settings['echart'][$nameG] = echarts_field_generate_settings_pie_funnel_graph($json_array, $item['axis_x'],$series,'funnel', $axisX_labels, '', $max_y);
+    $max_y = $item['max_y'];  
+    
+    $funnel = echarts_field_generate_settings_pie_funnel_graph($json_array, $item['axis_x'],
+      $series,'funnel', $axisx_labels, '', $max_y);
+
+    $graph_settings['echart'][$nameg] = $funnel;
     break;
   case 'radar':
-      $max_y = $item['max_y'];  
-      $axisX_labels = explode(',',trim($axisX_labels));
-      $graph_settings['echart'][$nameG] = echarts_field_generate_settings_radar_graph($json_array, $item['axis_x'],$series,'radar', $axisX_labels, $max_y ,'');
+    $max_y = $item['max_y'];  
+
+    $axisx_labels = explode(',',trim($axisx_labels));
+      
+    $radar = echarts_field_generate_settings_radar_graph($json_array, $item['axis_x'],
+      $series,'radar', $axisx_labels, $max_y ,'');    
+
+    $graph_settings['echart'][$nameg] = $radar;
+    
     break;
   case 'treemap':
-      $graph_settings['echart'][$nameG] = echarts_field_generate_settings_treemap_graph($json_array, $item['axis_x'],$series,'treemap', $axisX_labels, '');
+    $treemap = echarts_field_generate_settings_treemap_graph($json_array, $item['axis_x'],
+      $series,'treemap', $axisx_labels, '');
+    
+    $graph_settings['echart'][$nameg] = $treemap;
+
     break;
   default:
       $output = '<h3>' . t('This kind of graph is not implemented yet') . '</h3>';
@@ -293,12 +322,9 @@ function _echarts_field_generate_graph($item){
 }
 
 
-
 /**
  * Implements custom template_preprocess
  */
 function template_preprocess_echarts_field_json_graph(&$vars){
   $vars['graph'] = $vars['item']['graph'];
 }
-
-

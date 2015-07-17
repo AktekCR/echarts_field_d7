@@ -44,32 +44,31 @@ function echarts_field_field_schema($field) {
       'length' => 255,
       'not null' => TRUE
     ),
-    'enable_y' =>array(
+    'enable_y' => array(
       'type' => 'varchar',
       'length' => 12,
       'not null' => TRUE
     ),
-    'show_average' =>array(
+    'show_average' => array(
       'type' => 'varchar',
       'length' => 12,
       'not null' => TRUE
     ),
-    'show_maxMin' =>array(
+    'show_maxMin' => array(
       'type' => 'varchar',
       'length' => 12,
       'not null' => TRUE
     ),
-    'linear_shadow' =>array(
+    'linear_shadow' => array(
       'type' => 'varchar',
       'length' => 12,
       'not null' => TRUE
     ),
-     'stack_bar' =>array(
+     'stack_bar' => array(
       'type' => 'varchar',
       'length' => 12,
       'not null' => TRUE
     )
-
   );
   
   return array(
