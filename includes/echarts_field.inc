@@ -1,9 +1,9 @@
 <?php
 
 /**
-* Created by Randall Sibaja R.
-**/
-function echarts_field_get_data_from_json($key, $json, $series_x){
+ * Created by Randall Sibaja R.
+ */
+function echarts_field_get_data_from_json($key, $json, $series_x) {
  
   $output = array();
 
@@ -14,15 +14,18 @@ function echarts_field_get_data_from_json($key, $json, $series_x){
     if ( in_array($var, $series_x ) ) {
       $output[] = $var;  
     }
+
   }
+
   return $output;
+
 }
 
 
 /**
-* Created by Randall Sibaja R.
-**/
-function echarts_field_create_polar_radar($key, $json, $series_x, $max_y){
+ * Created by Randall Sibaja R.
+ */
+function echarts_field_create_polar_radar($key, $json, $series_x, $max_y) {
 
   $output = array();
   foreach($json as $row){
@@ -37,15 +40,16 @@ function echarts_field_create_polar_radar($key, $json, $series_x, $max_y){
       ); 
     }
   }
+
   return $output;
+
 }
 
 
 /**
-* Created by Randall Sibaja R.
-**/
-function echarts_field_get_series($xaxis, $series, $data, $graph_type, $series_x,
-  $shadow, $series_type, $stack_bar, $show_average, $show_maxmin) {
+ * Created by Randall Sibaja R.
+ */
+function echarts_field_get_series($xaxis, $series, $data, $graph_type, $series_x, $shadow, $series_type, $stack_bar, $show_average, $show_maxmin) {
 
   $output = array();
 
@@ -154,15 +158,16 @@ function echarts_field_get_series($xaxis, $series, $data, $graph_type, $series_x
       }
     }  
   }
-  return $output;  
+
+  return $output;
+
 }
 
+
 /**
-* Created by  Randall Sibaja R.
-**/
-function echarts_field_generate_settings_bar_line_graph($json, $xaxis, $series, 
-  $type, $series_x ,$title = '', $enable_y, $shadow, $series_type, $stack_bar,
-  $show_average, $show_maxmin) {
+ * Created by  Randall Sibaja R.
+ */
+function echarts_field_generate_settings_bar_line_graph($json, $xaxis, $series, $type, $series_x , $title = '', $enable_y, $shadow, $series_type, $stack_bar, $show_average, $show_maxmin) {
   
   $options = array(
     'tooltip' => array('trigger' => 'axis'),          
@@ -232,8 +237,7 @@ function echarts_field_generate_settings_bar_line_graph($json, $xaxis, $series,
         )
       )
     ),
-    'series' => echarts_field_get_series($xaxis, $series, $json, $type, $series_x,
-      $shadow, $series_type,$stack_bar, $show_average, $show_maxmin),
+    'series' => echarts_field_get_series($xaxis, $series, $json, $type, $series_x, $shadow, $series_type,$stack_bar, $show_average, $show_maxmin),
   );
 
   if ( $stack_bar == 'Si' ){
@@ -251,13 +255,14 @@ function echarts_field_generate_settings_bar_line_graph($json, $xaxis, $series,
   );
 
   return $output;
+
 }
 
+
 /**
-* Created by Randall Sibaja R.
-**/
-function echarts_field_generate_settings_pie_funnel_graph($json, $xaxis, $series, 
-  $type, $series_x, $title='', $max_y) {
+ * Created by Randall Sibaja R.
+ */
+function echarts_field_generate_settings_pie_funnel_graph($json, $xaxis, $series, $type, $series_x, $title='', $max_y) {
     
   $chart = array(
     'chartType' => $type,
@@ -329,29 +334,29 @@ function echarts_field_generate_settings_pie_funnel_graph($json, $xaxis, $series
         'calculable' => TRUE,
         'series' => array(
           array(
-              'name'=> t($series_x),
-              'type'=> $type,
-              'width' => $type == 'funnel' ? '50%' : '80%',
-              'x' => $type == 'funnel' ? '20%': '',
-              'radius' => '70%',
-              'funnelAlign' => $type == 'funnel' ? 'center' : '',
-              'max' => $max_y,   
-              'center' => array('60%','50%'),
-              'data'=> echarts_field_get_series($xaxis, $series, $json, $type, $series_x, '',
-                '','','','')
+            'name'=> t($series_x),
+            'type'=> $type,
+            'width' => $type == 'funnel' ? '50%' : '80%',
+            'x' => $type == 'funnel' ? '20%': '',
+            'radius' => '70%',
+            'funnelAlign' => $type == 'funnel' ? 'center' : '',
+            'max' => $max_y,   
+            'center' => array('60%','50%'),
+            'data'=> echarts_field_get_series($xaxis, $series, $json, $type, $series_x, '', '','','','')
           )          
         )
       )
     );
+
   return $chart;
+
 }
 
+
 /**
-*Created by  Randall Sibaja R.
-*
-**/
-function echarts_field_generate_settings_radar_graph($json, $xaxis , $series, 
-  $type, $series_x, $max_y, $title='') {  
+ * Created by  Randall Sibaja R.
+ */
+function echarts_field_generate_settings_radar_graph($json, $xaxis , $series, $type, $series_x, $max_y, $title='') {  
   
   $radar = array(
     'chartType' => $type,
@@ -416,22 +421,21 @@ function echarts_field_generate_settings_radar_graph($json, $xaxis , $series,
                     )
                   )
               ),
-              'data' => echarts_field_get_series($xaxis, $series, $json, $type, $series_x, '', 
-                 '','','','')
+              'data' => echarts_field_get_series($xaxis, $series, $json, $type, $series_x, '', '','','','')
           )
         ) 
       )
     );
-    return $radar; 
+
+  return $radar; 
+
 }
 
 
 /**
-*Created by Randall Sibaja R. 
-*
-**/
-function echarts_field_generate_settings_treemap_graph($json,$xaxis , $series,
-  $type, $series_x, $title='') {
+ * Created by Randall Sibaja R. 
+ */
+function echarts_field_generate_settings_treemap_graph($json, $xaxis , $series, $type, $series_x, $title='') {
   
   $treemap = array(
     'chartType' => $type,
@@ -494,11 +498,12 @@ function echarts_field_generate_settings_treemap_graph($json,$xaxis , $series,
               )
             )
           ),
-          'data'=> echarts_field_get_series($xaxis, $series, $json, $type, $series_x,'',
-             '','','','')
+          'data'=> echarts_field_get_series($xaxis, $series, $json, $type, $series_x,'', '','','','')
         )          
       )
     )
   );
+
   return $treemap;
+
 }

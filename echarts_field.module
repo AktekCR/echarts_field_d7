@@ -4,6 +4,7 @@
  * Implementation of hook_field_info()
  */
 function echarts_field_field_info() { 
+  
   return array( 
     'echarts_json_field' => array( 
       'label' => t('ECharts field'), 
@@ -12,6 +13,7 @@ function echarts_field_field_info() {
       'default_formatter' => 'poutine_maker_poutine_formatter',
     ),
   );
+
 }
 
 
@@ -19,20 +21,21 @@ function echarts_field_field_info() {
  * Implementation of hook_field_widget_info()
  */
 function echarts_field_field_widget_info() {
+  
   return array(
     'echarts_json_field_widget' => array(
       'label' => t('EChart JSON field'),
       'field types' => array('echarts_json_field'),
     ),
   );
+
 }
 
 
 /**
  * Implements hook_field_widget_form()
  */
-function echarts_field_field_widget_form(&$form, &$form_state, $field, $instance,
-  $langcode, $items, $delta, $element){
+function echarts_field_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
 
   $field_name = $instance['field_name'];
   $required = $element['#required'];
@@ -63,6 +66,7 @@ function echarts_field_field_widget_form(&$form, &$form_state, $field, $instance
     '#required' => $required,
     '#default_value' => isset($items[$delta]['json_structure']) ? $items[$delta]['json_structure'] : '',
   );
+
   $element['axis_x'] = array(
     '#title' => t('JSON key field name'),
     '#type' => 'textfield',
@@ -133,28 +137,20 @@ function echarts_field_field_widget_form(&$form, &$form_state, $field, $instance
   );
 
   return $element;
+
 }
-
-
-/*
-*Implements hook_form_alter()
-*
-
-function echarts_field_field_widget_form_alter(&$element, &$form_state, &$context)
-{
-  drupal_add_js(drupal_get_path('module', 'echarts_field') . '/js/echarts_field.js', 'file');
-}
-*/
-
 
 /**
  * Implements hook_field_is_empty().
  */
 function echarts_field_field_is_empty($item, $field) {
-  if ( empty($item['json_url']) ) {
+  
+  if (empty($item['json_url'])) {
     return TRUE;
   }
+  
   return FALSE;
+
 }
 
 
@@ -169,16 +165,17 @@ function echarts_field_field_formatter_info() {
       'field types' => array('echarts_json_field'),
     ),
   );
+
 }
 
 
 /**
  * Implements hook_field_formatter_view().
  */
-function echarts_field_field_formatter_view($entity_type, $entity, $field,
-  $instance, $langcode, $items, $display){
+function echarts_field_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
 
   $element = array();
+
   switch ($display['type']) {
     case 'echarts_json_field_graph':
       $format_field = 'echarts_field_json_graph';//echarts_field_json_field_graph_format';
@@ -191,7 +188,9 @@ function echarts_field_field_formatter_view($entity_type, $entity, $field,
       '#markup' => theme($format_field, array('item' => $item)),
     );
   }
+
   return $element;
+
 }
 
 
@@ -199,6 +198,7 @@ function echarts_field_field_formatter_view($entity_type, $entity, $field,
  * Implements hook_theme()
  */
 function echarts_field_theme(){
+
   return array(
     'echarts_field_json_graph' => array(
       'template' => 'theme/echarts_field_json_graph',
@@ -207,6 +207,7 @@ function echarts_field_theme(){
       ),
     ),
   );
+
 }
 
 
@@ -259,6 +260,7 @@ function _echarts_field_generate_graph($item){
      $json_tmp = $json_array->$value;
      $json_array = $json_tmp; 
   }
+
   //Generic name to the chart.
   $nameg = hash('MD5',microtime(true));
   
@@ -272,6 +274,7 @@ function _echarts_field_generate_graph($item){
 
       $graph_settings['echart'][$nameg] = $line;
       break;
+
    case 'bar':
     $axisx_labels = explode(',',trim($axisx_labels));
       
@@ -280,13 +283,15 @@ function _echarts_field_generate_graph($item){
       $stack_bar, $show_average, $show_maxmin);
 
     $graph_settings['echart'][$nameg] = $bar;
-    break; 
+    break;
+
   case 'pie':
     $pie = echarts_field_generate_settings_pie_funnel_graph($json_array, $item['axis_x'],
       $series,'pie', $axisx_labels, '', '');
 
     $graph_settings['echart'][$nameg] = $pie;
     break;
+
   case 'funnel':
     $max_y = $item['max_y'];  
     
@@ -295,6 +300,7 @@ function _echarts_field_generate_graph($item){
 
     $graph_settings['echart'][$nameg] = $funnel;
     break;
+
   case 'radar':
     $max_y = $item['max_y'];  
 
@@ -303,9 +309,9 @@ function _echarts_field_generate_graph($item){
     $radar = echarts_field_generate_settings_radar_graph($json_array, $item['axis_x'],
       $series,'radar', $axisx_labels, $max_y ,'');    
 
-    $graph_settings['echart'][$nameg] = $radar;
-    
+    $graph_settings['echart'][$nameg] = $radar;    
     break;
+
   case 'treemap':
     $treemap = echarts_field_generate_settings_treemap_graph($json_array, $item['axis_x'],
       $series,'treemap', $axisx_labels, '');
@@ -313,18 +319,22 @@ function _echarts_field_generate_graph($item){
     $graph_settings['echart'][$nameg] = $treemap;
 
     break;
+
   default:
       $output = '<h3>' . t('This kind of graph is not implemented yet') . '</h3>';
     break;
   }
   
   return render_echarts($graph_settings);
+
 }
 
 
 /**
  * Implements custom template_preprocess
  */
-function template_preprocess_echarts_field_json_graph(&$vars){
+function template_preprocess_echarts_field_json_graph(&$vars) {
+
   $vars['graph'] = $vars['item']['graph'];
+
 }
