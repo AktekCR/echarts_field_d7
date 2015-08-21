@@ -1,5 +1,4 @@
 name = Baidu ECharts Field
-
 core = 7.x
 
 dependencies[] = echarts
